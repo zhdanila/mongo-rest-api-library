@@ -17,8 +17,8 @@ func NewService(repos *repository.Repository) *Service {
 
 type Library interface {
 	GetAll() ([]models.Book, error)
-	GetById(id int) (models.Book, error)
-	Create(book models.Book) (int, error)
-	Update(updatedBook models.Book, id int) error
-	Delete(id int) error
+	GetById(id string) (models.Book, error)
+	Create(book models.Book) (string, error)
+	Update(updatedBook models.Book, id string) error
+	Delete(id string) error
 }
