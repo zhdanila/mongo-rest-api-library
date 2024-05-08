@@ -66,10 +66,39 @@ func (r *BookRepository) Create(book models.Book) (string, error) {
 	return insertedID.Hex(), nil
 }
 
-func (r *BookRepository) Update(updatedBook models.Book, id string) error {
+func (r *BookRepository) Update(updatedBook models.Book, name string) error {
+	collection := r.db.Database("rest").Collection("library")
+	filter := bson.M{"name": name}
+
+	update := bson.M{
+		"$set": bson.M{
+			"name":           updatedBook.Name,
+			"description":    updatedBook.Description,
+			"production_year": updatedBook.ProductionYear,
+		},
+	}
+	fmt.Println(update)
+	fmt.Println(filter)
+	_, err := collection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (r *BookRepository) Delete(id string) error {
+	collection := r.db.Database("rest").Collection("library")
+	filter := bson.M{"name": id}
+
+	result, err := collection.DeleteOne(context.Background(), filter)
+	if err != nil {
+		return err
+	}
+
+	if result.DeletedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
 	return nil
 }
