@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"mongo/internal/models"
@@ -17,11 +18,35 @@ func NewBookRepository(db *mongo.Client) *BookRepository {
 }
 
 func (r *BookRepository) GetAll() ([]models.Book, error) {
-	return nil, nil
+	var books []models.Book
+
+	collection := r.db.Database("rest").Collection("library")
+	cursor, err := collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
+
+	err = cursor.All(context.Background(), &books)
+	if err != nil {
+		return nil, err
+	}
+
+	return books, nil
 }
 
 func (r *BookRepository) GetById(id string) (models.Book, error) {
-	return models.Book{}, nil
+	var book models.Book
+
+	collection := r.db.Database("rest").Collection("library")
+	filter := bson.M{"name": id}
+
+	err := collection.FindOne(context.Background(), filter).Decode(&book)
+	if err != nil {
+		return models.Book{}, err
+	}
+
+	return book, nil
 }
 
 func (r *BookRepository) Create(book models.Book) (string, error) {
